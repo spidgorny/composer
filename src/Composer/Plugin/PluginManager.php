@@ -181,8 +181,13 @@ class PluginManager
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
                 $class = trim($class, '\\');
-                $path = $classLoader->findFile($class);
-                $code = file_get_contents($path);
+				$this->io->write('Class: ' . $class);
+				$path = $classLoader->findFile($class);
+				$this->io->write('Path: ' . $path);
+				if (!$path) {
+					continue;
+				}
+				$code = file_get_contents($path);
                 $separatorPos = strrpos($class, '\\');
                 $className = $class;
                 if ($separatorPos) {

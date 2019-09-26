@@ -49,13 +49,20 @@ class Hg
         // Try as is
         $command = call_user_func($commandCallable, $url);
 
+        $this->io->write('Command: ' . $command);
+        $this->io->write('CWD: ' . $cwd);
+        $this->io->write('Is Dir: ' . is_dir($cwd));
+        if (!is_dir($cwd)) {
+        	mkdir($cwd);
+		}
+        $this->io->write('Is Dir: ' . is_dir($cwd));
         if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
             return;
         }
 
         // Try with the authentication informations available
         if (preg_match('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication($match[5])) {
-            $auth = $this->io->getAuthentication($match[5]);
+            $auth = $this->io->getAuthentication($match[5]);	// appdev.nintendo.de
             $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6]) ? $match[6] : null);
 
             $command = call_user_func($commandCallable, $authenticatedUrl);
@@ -67,6 +74,7 @@ class Hg
             $error = $this->process->getErrorOutput();
         } else {
             $error = 'The given URL (' . $url . ') does not match the required format (http(s)://(username:password@)example.com/path-to-repository)';
+            $this->io->write($this->io->getAuthentications());
         }
 
         $this->throwException('Failed to clone ' . $url . ', ' . "\n\n" . $error, $url);
