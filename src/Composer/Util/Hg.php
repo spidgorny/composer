@@ -53,14 +53,18 @@ class Hg
         $this->io->write('CWD: ' . $cwd);
         $this->io->write('Is Dir: ' . is_dir($cwd));
         if (!is_dir($cwd)) {
+			$this->io->write('mkdir ' . $cwd);
         	mkdir($cwd);
+			$this->io->write('Is Dir: ' . is_dir($cwd));
 		}
-        $this->io->write('Is Dir: ' . is_dir($cwd));
+        $this->io->write('Command: ' . $command);
         if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
             return;
         }
+        $this->io->write('Output: ' . $ignoredOutput);
+        $this->io->writeError('Output: ' . $this->process->getErrorOutput());
 
-        // Try with the authentication informations available
+        // Try with the authentication information available
         if (preg_match('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication($match[5])) {
             $auth = $this->io->getAuthentication($match[5]);	// appdev.nintendo.de
             $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6]) ? $match[6] : null);
